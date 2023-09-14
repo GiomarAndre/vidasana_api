@@ -17,6 +17,7 @@ namespace AwsDotnetCsharp.Providers.Repositories
             try
             {
                 var consulta = $"call VIDASANA_SP_EJERCICIO_LISTA_CATEGORIAS ()";
+                LogMessage(contextLambda, consulta);
                 MySqlCommand cmd = new MySqlCommand(consulta, connection);
                 connection.Open();
                 reader = cmd.ExecuteReader();
@@ -75,7 +76,8 @@ namespace AwsDotnetCsharp.Providers.Repositories
 
             try
             {
-                var consulta = $"call VIDASANA_SP_EJERCICIO_LISTA_EJERCICIOS ('${cod_categoria}')";
+                var consulta = $"call VIDASANA_SP_EJERCICIO_LISTA_EJERCICIOS ('{cod_categoria}')";
+                LogMessage(contextLambda, consulta);
                 MySqlCommand cmd = new MySqlCommand(consulta, connection);
                 connection.Open();
                 reader = cmd.ExecuteReader();
@@ -97,7 +99,6 @@ namespace AwsDotnetCsharp.Providers.Repositories
                         series = String.IsNullOrEmpty(reader["series"].ToString()) ? 0 : Convert.ToInt32(reader["series"].ToString()),
                         repeticiones = String.IsNullOrEmpty(reader["repeticiones"].ToString()) ? 0 : Convert.ToInt32(reader["repeticiones"].ToString()),
                         descripcion = reader["descripcion"].ToString(),
-                        estado = String.IsNullOrEmpty(reader["activo"].ToString()) ? false : Convert.ToBoolean(reader["activo"].ToString()),
                         usuario_creacion = reader["usuario_creacion"].ToString(),
                         fecha_creacion = reader["fecha_creacion"].ToString(),
                         usuario_modificacion = reader["usuario_modificacion"].ToString(),
@@ -132,7 +133,7 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 return new ListarEjerciciosResponse()
                 {
                     codigo = 500,
-                    descripcion = "Error interno al liistar ejercicios."
+                    descripcion = "Error interno al listar ejercicios."
                 };
             }
             finally 
@@ -146,18 +147,21 @@ namespace AwsDotnetCsharp.Providers.Repositories
             MySqlDataReader reader;
 
             try
-            {
+            {             
                 var consulta = $"call VIDASANA_SP_EJERCICIO_REGISTRAR " +
-                $"('${request.nombre_ejercicio}', " + 
-                $"'${request.cod_subcategoria}', " + 
-                $"${request.cantidad_duracion}, " + 
-                $"'${request.unidad_medida_duracion}', " + 
-                $"${request.series}, " + 
-                $"${request.repeticiones}, " + 
-                $"${request.cantidad_descanso}, " + 
-                $"'${request.unidad_medida_descanso}', " + 
-                $"'${request.descripcion}', " + 
-                $"'${id_usuario}')";
+                $"('{request.nombre_ejercicio}', " + 
+                $"'{request.cod_subcategoria}', " + 
+                $"{request.cantidad_duracion}, " + 
+                $"'{request.unidad_medida_duracion}', " + 
+                $"{request.series}, " + 
+                $"{request.repeticiones}, " + 
+                $"{request.cantidad_descanso}, " + 
+                $"'{request.unidad_medida_descanso}', " + 
+                $"'{request.descripcion}', " + 
+                $"'{id_usuario}')";
+
+                LogMessage(contextLambda, consulta);
+
                 MySqlCommand cmd = new MySqlCommand(consulta, connection);
                 connection.Open();
                 reader = cmd.ExecuteReader();
@@ -168,7 +172,7 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 while (reader.Read())
                 {
                     dcodigo = String.IsNullOrEmpty(reader["codigo"].ToString()) ? 400 : Convert.ToInt32(reader["codigo"].ToString());
-                    ddescripcion = reader["descripcion"].ToString();
+                    ddescripcion = reader["mensaje"].ToString();
                     data.id_ejercicio = String.IsNullOrEmpty(reader["id_ejercicio"].ToString()) ? 0 : Convert.ToInt32(reader["id_ejercicio"].ToString());
                     data.cod_ejercicio = reader["cod_ejercicio"].ToString();
                 }
@@ -214,7 +218,8 @@ namespace AwsDotnetCsharp.Providers.Repositories
 
             try
             {
-                var consulta = $"call VIDASANA_SP_EJERCICIO_ELIMINAR (${id_ejercicio},'${id_usuario}')";
+                var consulta = $"call VIDASANA_SP_EJERCICIO_ELIMINAR ({id_ejercicio},'{id_usuario}')";
+                LogMessage(contextLambda, consulta);
                 MySqlCommand cmd = new MySqlCommand(consulta, connection);
                 connection.Open();
                 reader = cmd.ExecuteReader();
@@ -223,7 +228,7 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 while (reader.Read())
                 {
                     data.codigo = String.IsNullOrEmpty(reader["codigo"].ToString()) ? 400 : Convert.ToInt32(reader["codigo"].ToString());
-                    data.descripcion = reader["descripcion"].ToString();
+                    data.descripcion = reader["mensaje"].ToString();
                 }
                 
                 if (data != null)

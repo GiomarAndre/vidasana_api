@@ -19,7 +19,6 @@ namespace AwsDotnetCsharp.Entity
         public int series { get; set; }
         public int repeticiones { get; set; }
         public string descripcion { get; set; }
-        public bool estado { get; set; }
         public string usuario_creacion { get; set; }
         public string fecha_creacion { get; set; }
         public string usuario_modificacion { get; set; }
