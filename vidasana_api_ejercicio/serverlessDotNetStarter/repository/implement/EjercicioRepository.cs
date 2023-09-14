@@ -24,11 +24,13 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 var data = new List<DataCategoriasBD>();                
                 while (reader.Read())
                 {
-                    var item = new DataCategoriasBD();
-                    item.cod_categoria = reader["cod_categoria"].ToString();
-                    item.nombre_categoria = reader["nombre_categoria"].ToString();
-                    item.cod_subcategoria = reader["cod_subcategoria"].ToString();
-                    item.nombre_subcategoria = reader["nombre_subcategoria"].ToString();
+                    var item = new DataCategoriasBD
+                    {
+                        cod_categoria = reader["cod_categoria"].ToString(),
+                        nombre_categoria = reader["nombre_categoria"].ToString(),
+                        cod_subcategoria = reader["cod_subcategoria"].ToString(),
+                        nombre_subcategoria = reader["nombre_subcategoria"].ToString()
+                    };
                     data.Add(item);
                 }
                 
@@ -66,6 +68,78 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 connection.Close();
             }
         }
+        public ListarEjerciciosResponse ListarEjercicios(string secreto, ILambdaContext contextLambda, string id_usuario, string cod_categoria)
+        {
+            MySqlConnection connection = new MySqlConnection(secreto);
+            MySqlDataReader reader;
+
+            try
+            {
+                var consulta = $"call VIDASANA_SP_EJERCICIO_LISTA_EJERCICIOS ('${cod_categoria}')";
+                MySqlCommand cmd = new MySqlCommand(consulta, connection);
+                connection.Open();
+                reader = cmd.ExecuteReader();
+
+                var data = new List<DataEjercicio>();                
+                while (reader.Read())
+                {
+                    var item = new DataEjercicio
+                    {
+                        cod_subcategoria = reader["cod_subcategoria"].ToString(),
+                        nombre_subcategoria = reader["nombre_subcategoria"].ToString(),
+                        id_ejercicio = String.IsNullOrEmpty(reader["id_ejercicio"].ToString()) ? 0 : Convert.ToInt32(reader["id_ejercicio"].ToString()),
+                        cod_ejercicio = reader["cod_ejercicio"].ToString(),
+                        nombre_ejercicio = reader["nombre_ejercicio"].ToString(),
+                        cantidad_duracion = String.IsNullOrEmpty(reader["cantidad_duracion"].ToString()) ? 0 : Convert.ToInt32(reader["cantidad_duracion"].ToString()),
+                        unidad_medida_duracion = reader["unidad_medida_duracion"].ToString(),
+                        cantidad_descanso = String.IsNullOrEmpty(reader["cantidad_descanso"].ToString()) ? 0 : Convert.ToInt32(reader["cantidad_descanso"].ToString()),
+                        unidad_medida_descanso = reader["unidad_medida_descanso"].ToString(),
+                        series = String.IsNullOrEmpty(reader["series"].ToString()) ? 0 : Convert.ToInt32(reader["series"].ToString()),
+                        repeticiones = String.IsNullOrEmpty(reader["repeticiones"].ToString()) ? 0 : Convert.ToInt32(reader["repeticiones"].ToString()),
+                        descripcion = reader["descripcion"].ToString(),
+                        estado = String.IsNullOrEmpty(reader["activo"].ToString()) ? false : Convert.ToBoolean(reader["activo"].ToString()),
+                        usuario_creacion = reader["usuario_creacion"].ToString(),
+                        fecha_creacion = reader["fecha_creacion"].ToString(),
+                        usuario_modificacion = reader["usuario_modificacion"].ToString(),
+                        fecha_modificacion = reader["fecha_modificacion"].ToString()
+                    };
+                    data.Add(item);
+                }
+                
+                if (data != null && data.Count > 0)
+                {
+                    return new ListarEjerciciosResponse()
+                    {
+                        codigo = 200,
+                        descripcion = "Ejercicios obtenidos.",
+                        data = data
+                    };
+                }
+                else
+                {
+                    return new ListarEjerciciosResponse()
+                    {
+                        codigo = 400,
+                        descripcion = "No se obtuvo respuesta del listado de ejercicios."
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogMessage(contextLambda, "Error invocacion bd: " + ex.Message);
+                LogMessage(contextLambda, JsonConvert.SerializeObject(ex));
+                return new ListarEjerciciosResponse()
+                {
+                    codigo = 500,
+                    descripcion = "Error interno al liistar ejercicios."
+                };
+            }
+            finally 
+            {
+                connection.Close();
+            }
+        }
         public RegistrarEjercicioResponse RegistrarEjercicio(string secreto, ILambdaContext contextLambda, string id_usuario, RegistrarEjercicioRequest request)
         {
             MySqlConnection connection = new MySqlConnection(secreto);
@@ -88,9 +162,13 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 connection.Open();
                 reader = cmd.ExecuteReader();
 
-                var data = new RegistrarEjercicioDataResponse();                
+                var data = new RegistrarEjercicioDataResponse();
+                var dcodigo = 200;
+                var ddescripcion = "";                
                 while (reader.Read())
                 {
+                    dcodigo = String.IsNullOrEmpty(reader["codigo"].ToString()) ? 400 : Convert.ToInt32(reader["codigo"].ToString());
+                    ddescripcion = reader["descripcion"].ToString();
                     data.id_ejercicio = String.IsNullOrEmpty(reader["id_ejercicio"].ToString()) ? 0 : Convert.ToInt32(reader["id_ejercicio"].ToString());
                     data.cod_ejercicio = reader["cod_ejercicio"].ToString();
                 }
@@ -99,8 +177,8 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 {
                     return new RegistrarEjercicioResponse()
                     {
-                        codigo = 200,
-                        descripcion = "Categorias obtenidos.",
+                        codigo = dcodigo,
+                        descripcion = ddescripcion,
                         data = data
                     };
                 }
@@ -122,6 +200,58 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 {
                     codigo = 500,
                     descripcion = "Error interno al registrar ejercicio."
+                };
+            }
+            finally 
+            {
+                connection.Close();
+            }
+        }
+        public EliminarEjercicioResponse EliminarEjercicio(string secreto, ILambdaContext contextLambda, string id_usuario, int id_ejercicio)
+        {
+            MySqlConnection connection = new MySqlConnection(secreto);
+            MySqlDataReader reader;
+
+            try
+            {
+                var consulta = $"call VIDASANA_SP_EJERCICIO_ELIMINAR (${id_ejercicio},'${id_usuario}')";
+                MySqlCommand cmd = new MySqlCommand(consulta, connection);
+                connection.Open();
+                reader = cmd.ExecuteReader();
+
+                var data = new EliminarEjercicioResponse();                
+                while (reader.Read())
+                {
+                    data.codigo = String.IsNullOrEmpty(reader["codigo"].ToString()) ? 400 : Convert.ToInt32(reader["codigo"].ToString());
+                    data.descripcion = reader["descripcion"].ToString();
+                }
+                
+                if (data != null)
+                {
+                    return new EliminarEjercicioResponse()
+                    {
+                        codigo = data.codigo,
+                        descripcion = data.descripcion
+                    };
+                }
+                else
+                {
+                    return new EliminarEjercicioResponse()
+                    {
+                        codigo = 400,
+                        descripcion = "No se obtuvo respuesta al eliminar ejercicio."
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogMessage(contextLambda, "Error invocacion bd: " + ex.Message);
+                LogMessage(contextLambda, JsonConvert.SerializeObject(ex));
+                return new EliminarEjercicioResponse()
+                {
+                    codigo = 500,
+                    descripcion = "Error interno al eliminar ejercicio."
                 };
             }
             finally 

@@ -38,7 +38,18 @@ namespace AwsDotnetCsharp
         public async Task<APIGatewayProxyResponse> MaestroEjercicios(APIGatewayProxyRequest request, ILambdaContext context)
         {
             LogMessage(context, JsonConvert.SerializeObject(request));
-            var dataResponse = await _service.ListaMaestros(context, _repository);
+            var AuthorizerObject = JObject.Parse(JsonConvert.SerializeObject(request.RequestContext.Authorizer));
+            
+            var dataResponse = await _service.ListaMaestros(context, _repository, AuthorizerObject["claims"]["userName"].ToString());
+            return CreateResponseObject(dataResponse, dataResponse.codigo);
+        }
+        public async Task<APIGatewayProxyResponse> ListarEjercicios(APIGatewayProxyRequest request, ILambdaContext context)
+        {
+            LogMessage(context, JsonConvert.SerializeObject(request));
+            var AuthorizerObject = JObject.Parse(JsonConvert.SerializeObject(request.RequestContext.Authorizer));
+            request.QueryStringParameters.TryGetValue("cod_categoria", out string cod_categoria);
+
+            var dataResponse = await _service.ListarEjercicios(context, _repository, AuthorizerObject["claims"]["userName"].ToString(), cod_categoria);
             return CreateResponseObject(dataResponse, dataResponse.codigo);
         }
         public async Task<APIGatewayProxyResponse> RegistrarEjercicio(APIGatewayProxyRequest request, ILambdaContext context)
@@ -48,6 +59,15 @@ namespace AwsDotnetCsharp
             var AuthorizerObject = JObject.Parse(JsonConvert.SerializeObject(request.RequestContext.Authorizer));
             
             var dataResponse = await _service.RegistrarEjercicio(context, _repository, AuthorizerObject["claims"]["userName"].ToString(), dataRequest);
+            return CreateResponseObject(dataResponse, dataResponse.codigo);
+        }
+        public async Task<APIGatewayProxyResponse> EliminarEjercicio(APIGatewayProxyRequest request, ILambdaContext context)
+        {
+            LogMessage(context, JsonConvert.SerializeObject(request));
+            var AuthorizerObject = JObject.Parse(JsonConvert.SerializeObject(request.RequestContext.Authorizer));
+            request.QueryStringParameters.TryGetValue("id_ejercicio", out string str_id_ejercicio);
+            var id_ejercicio = Convert.ToInt32(str_id_ejercicio);
+            var dataResponse = await _service.EliminarEjercicio(context, _repository, AuthorizerObject["claims"]["userName"].ToString(), id_ejercicio);
             return CreateResponseObject(dataResponse, dataResponse.codigo);
         }
         void LogMessage(ILambdaContext ctx, string msg)

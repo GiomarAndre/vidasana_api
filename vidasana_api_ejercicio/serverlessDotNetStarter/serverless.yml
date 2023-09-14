@@ -32,7 +32,48 @@ functions:
       - http:
           path: ejercicio/maestros
           method: get
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp'  
+
+  listarEjercicios:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::ListarEjercicios
+    package:
+      artifact: bin/release/net6.0/apiejercicio.zip
+    timeout: 25    
+    events:
+      - http:
+          path: ejercicio/listado
+          method: post
+          cors: true
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp' 
+
+  registrarEjercicio:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::RegistrarEjercicio
+    package:
+      artifact: bin/release/net6.0/apiejercicio.zip
+    timeout: 25    
+    events:
+      - http:
+          path: ejercicio/registro
+          method: post
           cors: true 
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp'
+
+  eliminarEjercicio:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::EliminarEjercicio
+    package:
+      artifact: bin/release/net6.0/apiejercicio.zip
+    timeout: 25    
+    events:
+      - http:
+          path: ejercicio/eliminar
+          method: put
+          cors: true 
+          authorizer:
+            arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp'
 
 resources:
   Resources:

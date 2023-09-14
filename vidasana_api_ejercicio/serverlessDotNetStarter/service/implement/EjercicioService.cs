@@ -13,7 +13,7 @@ namespace AwsDotnetCsharp.Providers.Service
 {
     public class EjercicioService : IEjercicioService
     {
-        public async Task<ListaMaestrosResponse> ListaMaestros(ILambdaContext contextLambda, IEjercicioRepository _repository)
+        public async Task<ListaMaestrosResponse> ListaMaestros(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario)
         {
             string secreto = await GetSecret();
             var responseService = new ListaMaestrosResponse();
@@ -49,10 +49,20 @@ namespace AwsDotnetCsharp.Providers.Service
 
             return await Task.FromResult(responseService);
         }
+        public async Task<ListarEjerciciosResponse> ListarEjercicios(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario, string cod_categoria)
+        {
+            string secreto = await GetSecret();
+             return await Task.FromResult(_repository.ListarEjercicios(secreto, contextLambda, id_usuario, cod_categoria));
+        }
         public async Task<RegistrarEjercicioResponse> RegistrarEjercicio(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario, RegistrarEjercicioRequest request)
         {
              string secreto = await GetSecret();
              return await Task.FromResult(_repository.RegistrarEjercicio(secreto, contextLambda, id_usuario, request));
+        }
+        public async Task<EliminarEjercicioResponse> EliminarEjercicio(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario, int id_ejercicio)
+        {
+             string secreto = await GetSecret();
+             return await Task.FromResult(_repository.EliminarEjercicio(secreto, contextLambda, id_usuario, id_ejercicio));
         }
         static async Task<string> GetSecret()
         {
