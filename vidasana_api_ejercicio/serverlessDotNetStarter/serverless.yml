@@ -1,0 +1,48 @@
+service: vidasana-api-ejercicio
+
+provider:
+  name: aws
+  runtime: dotnet6
+  stage: dev
+  region: us-east-1
+
+  iam:
+    role:
+      statements:         
+        - Effect: Allow
+          Action:
+            - secretsmanager:*          
+          Resource:
+            - "arn:aws:secretsmanager:us-east-1:693741133520:secret:vidasana/admin/dev-95VIJO" 
+
+  environment:    
+    SECRET_NAME_BD: "vidasana/admin/${self:provider.stage}"
+    SECRET_NAME_BD_REGION: "us-east-1"    
+
+package:
+  individually: true
+
+functions:
+  maestroEjercicios:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::MaestroEjercicios
+    package:
+      artifact: bin/release/net6.0/apiejercicio.zip
+    timeout: 25    
+    events:
+      - http:
+          path: ejercicio/maestros
+          method: get
+          cors: true 
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi' 
