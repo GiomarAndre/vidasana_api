@@ -1,0 +1,61 @@
+service: vidasana-seguridad
+
+provider:
+  name: aws
+  runtime: dotnet6
+  stage: dev
+  region: us-east-1
+
+  iam:
+    role:
+      statements:         
+        - Effect: Allow
+          Action:
+            - secretsmanager:*          
+          Resource:
+            - "arn:aws:secretsmanager:us-east-1:693741133520:secret:vidasana/admin/dev-95VIJO" 
+
+  environment:    
+    SECRET_NAME_BD: "vidasana/admin/${self:provider.stage}"
+    SECRET_NAME_BD_REGION: "us-east-1"    
+
+package:
+  individually: true
+
+functions:  
+  preToken:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::PreToken
+    package:
+      artifact: bin/release/net6.0/pretoken.zip
+    timeout: 25 
+    events:
+      - cognitoUserPool:
+          pool: vidasana-${self:provider.stage}
+          trigger: PreTokenGeneration
+          existing: true
+
+  dataUsuario:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::DataUsuario
+    package:
+      artifact: bin/release/net6.0/pretoken.zip
+    timeout: 25 
+    events:
+      - http:
+          path: seguridad/data_usuario
+          method: get
+          cors: true 
+          # authorizer:
+          #   arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp'
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi' 
