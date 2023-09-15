@@ -44,7 +44,7 @@ functions:
     events:
       - http:
           path: ejercicio/listado
-          method: post
+          method: get
           cors: true
           authorizer:
             arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp' 
