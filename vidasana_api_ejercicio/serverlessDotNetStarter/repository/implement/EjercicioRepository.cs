@@ -264,6 +264,82 @@ namespace AwsDotnetCsharp.Providers.Repositories
                 connection.Close();
             }
         }
+        public ListarEjerciciosAppAllResponse ListarEjerciciosApp(string secreto, ILambdaContext contextLambda)
+        {
+            MySqlConnection connection = new MySqlConnection(secreto);
+            MySqlDataReader reader;
+
+            try
+            {
+                var consulta = $"call VIDASANA_SP_APP_EJERCICIO_LISTA_EJERCICIOS ()";
+                LogMessage(contextLambda, consulta);
+                MySqlCommand cmd = new MySqlCommand(consulta, connection);
+                connection.Open();
+                reader = cmd.ExecuteReader();
+
+                var data = new List<DataAppEjercicioAll>();                
+                while (reader.Read())
+                {
+                    var item = new DataAppEjercicioAll
+                    {
+                        cod_categoria = reader["cod_categoria"].ToString(),
+                        nombre_categoria = reader["nombre_categoria"].ToString(),
+                        cod_subcategoria = reader["cod_subcategoria"].ToString(),
+                        nombre_subcategoria = reader["nombre_subcategoria"].ToString(),
+                        id_ejercicio = String.IsNullOrEmpty(reader["id_ejercicio"].ToString()) ? 0 : Convert.ToInt32(reader["id_ejercicio"].ToString()),
+                        cod_ejercicio = reader["cod_ejercicio"].ToString(),
+                        nombre_ejercicio = reader["nombre_ejercicio"].ToString(),
+                        cantidad_duracion = String.IsNullOrEmpty(reader["cantidad_duracion"].ToString()) ? 0 : Convert.ToInt32(reader["cantidad_duracion"].ToString()),
+                        unidad_medida_duracion = reader["unidad_medida_duracion"].ToString(),
+                        cantidad_descanso = String.IsNullOrEmpty(reader["cantidad_descanso"].ToString()) ? 0 : Convert.ToInt32(reader["cantidad_descanso"].ToString()),
+                        unidad_medida_descanso = reader["unidad_medida_descanso"].ToString(),
+                        series = String.IsNullOrEmpty(reader["series"].ToString()) ? 0 : Convert.ToInt32(reader["series"].ToString()),
+                        repeticiones = String.IsNullOrEmpty(reader["repeticiones"].ToString()) ? 0 : Convert.ToInt32(reader["repeticiones"].ToString()),
+                        descripcion = reader["descripcion"].ToString(),
+                        cod_multimedia_ejercicio = reader["cod_multimedia_ejercicio"].ToString(),
+                        cod_tipo_multimedia = reader["cod_tipo_multimedia"].ToString(),
+                        nombre_archivo = reader["nombre_archivo"].ToString(),
+                        extension = reader["extension"].ToString(),
+                        url_archivo = reader["url_archivo"].ToString(),
+                        descripcion_multimedia = reader["descripcion_multimedia"].ToString()                        
+                    };
+                    data.Add(item);
+                }
+                
+                if (data != null && data.Count > 0)
+                {
+                    return new ListarEjerciciosAppAllResponse()
+                    {
+                        codigo = 200,
+                        descripcion = "Ejercicios app obtenidos.",
+                        data = data
+                    };
+                }
+                else
+                {
+                    return new ListarEjerciciosAppAllResponse()
+                    {
+                        codigo = 400,
+                        descripcion = "No se obtuvo datos de los ejercicios."
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LogMessage(contextLambda, "Error invocacion bd: " + ex.Message);
+                LogMessage(contextLambda, JsonConvert.SerializeObject(ex));
+                return new ListarEjerciciosAppAllResponse()
+                {
+                    codigo = 500,
+                    descripcion = "Error interno al obtener los ejercicios."
+                };
+            }
+            finally 
+            {
+                connection.Close();
+            }
+        }
         void LogMessage(ILambdaContext ctx, string msg)
         {
             ctx.Logger.LogLine(

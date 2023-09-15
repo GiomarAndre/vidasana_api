@@ -11,5 +11,6 @@ namespace AwsDotnetCsharp.Providers.Service
         Task<ListarEjerciciosResponse> ListarEjercicios(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario, string cod_categoria);
         Task<RegistrarEjercicioResponse> RegistrarEjercicio(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario, RegistrarEjercicioRequest request);
         Task<EliminarEjercicioResponse> EliminarEjercicio(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario, int id_ejercicio);
+        Task<ListarEjerciciosAppResponse> ListarEjerciciosApp(ILambdaContext contextLambda, IEjercicioRepository _repository, string id_usuario);
     }
 }

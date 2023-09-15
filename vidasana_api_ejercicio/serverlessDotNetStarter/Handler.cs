@@ -70,6 +70,12 @@ namespace AwsDotnetCsharp
             var dataResponse = await _service.EliminarEjercicio(context, _repository, AuthorizerObject["claims"]["userName"].ToString(), id_ejercicio);
             return CreateResponseObject(dataResponse, dataResponse.codigo);
         }
+        public async Task<APIGatewayProxyResponse> ListarEjerciciosApp(APIGatewayProxyRequest request, ILambdaContext context)
+        {
+            LogMessage(context, JsonConvert.SerializeObject(request));
+            var dataResponse = await _service.ListarEjerciciosApp(context, _repository,"vidasanaadm");
+            return CreateResponseObject(dataResponse, dataResponse.codigo);
+        }
         void LogMessage(ILambdaContext ctx, string msg)
         {
             ctx.Logger.LogLine(

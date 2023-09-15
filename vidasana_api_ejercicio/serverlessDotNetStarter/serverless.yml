@@ -75,6 +75,20 @@ functions:
           authorizer:
             arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp'
 
+  listarEjerciciosApp:
+    handler: AwsDotnetCsharp::AwsDotnetCsharp.Handler::ListarEjerciciosApp
+    package:
+      artifact: bin/release/net6.0/apiejercicio.zip
+    timeout: 25    
+    events:
+      - http:
+          path: ejercicio/app/listado
+          method: get
+          cors: true 
+          # authorizer:
+          #   arn: 'arn:aws:cognito-idp:us-east-1:693741133520:userpool/us-east-1_OJo9kXGfp'
+
+
 resources:
   Resources:
     GatewayResponseDefault4XX:
